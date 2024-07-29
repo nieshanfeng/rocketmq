@@ -84,6 +84,7 @@ public class NamesrvController {
 
         this.registerProcessor();
 
+        //任务1、每隔 10s 扫描 broker ,维护当前存活的Broker信息。
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
             @Override
@@ -92,6 +93,7 @@ public class NamesrvController {
             }
         }, 5, 10, TimeUnit.SECONDS);
 
+        //任务2、每隔 10s 打印KVConfig 信息。
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
             @Override
