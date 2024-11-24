@@ -29,14 +29,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import javax.annotation.Generated;
+//import javax.annotation.Generated;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.processing.Generated;
+
 import static java.math.BigDecimal.ROUND_HALF_UP;
 
-@Generated("StatUtil")
+//@Generated("StatUtil")
 public class StatUtil {
     private static Logger sysLogger = LoggerFactory.getLogger(StatUtil.class);
     private static Logger logger = LoggerFactory.getLogger("StatLogger");
