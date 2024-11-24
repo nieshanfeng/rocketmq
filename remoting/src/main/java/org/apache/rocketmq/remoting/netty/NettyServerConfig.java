@@ -17,15 +17,23 @@
 package org.apache.rocketmq.remoting.netty;
 
 public class NettyServerConfig implements Cloneable {
+    // 默认监听端口
     private int listenPort = 8888;
+    // 服务端工作线程数
     private int serverWorkerThreads = 8;
+    // 回调处理线程数
     private int serverCallbackExecutorThreads = 0;
+    // 轮询线程数
     private int serverSelectorThreads = 3;
+    // 服务端单向请求信号量最大值
     private int serverOnewaySemaphoreValue = 256;
+    // 服务端异步请求信号量最大值
     private int serverAsyncSemaphoreValue = 64;
+    // 服务端通道最大空闲时间
     private int serverChannelMaxIdleTimeSeconds = 120;
-
+    // socket发送缓冲大小， 默认65535
     private int serverSocketSndBufSize = NettySystemConfig.socketSndbufSize;
+    // socket接收缓冲大小， 默认65535
     private int serverSocketRcvBufSize = NettySystemConfig.socketRcvbufSize;
     private int writeBufferHighWaterMark = NettySystemConfig.writeBufferHighWaterMark;
     private int writeBufferLowWaterMark = NettySystemConfig.writeBufferLowWaterMark;

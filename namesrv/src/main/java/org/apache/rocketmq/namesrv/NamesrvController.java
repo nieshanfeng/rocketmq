@@ -63,13 +63,18 @@ public class NamesrvController {
     public NamesrvController(NamesrvConfig namesrvConfig, NettyServerConfig nettyServerConfig) {
         this.namesrvConfig = namesrvConfig;
         this.nettyServerConfig = nettyServerConfig;
+        // 初始化kv配置管理器
         this.kvConfigManager = new KVConfigManager(this);
+        // 初始化路由管理器
         this.routeInfoManager = new RouteInfoManager();
+        // 初始化broker监测服务
         this.brokerHousekeepingService = new BrokerHousekeepingService(this);
+        // configuration封装namesrvConfig、nettyServerConfig
         this.configuration = new Configuration(
             log,
             this.namesrvConfig, this.nettyServerConfig
         );
+        // 通过反射，将namesrvConfig中的配置存储路径，设置到configuration的storePathField属性中
         this.configuration.setStorePathFromConfig(this.namesrvConfig, "configStorePath");
     }
 
