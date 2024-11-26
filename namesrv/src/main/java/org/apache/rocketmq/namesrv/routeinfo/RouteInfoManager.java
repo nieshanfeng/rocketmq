@@ -51,6 +51,7 @@ import org.apache.rocketmq.remoting.common.RemotingUtil;
  */
 public class RouteInfoManager {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.NAMESRV_LOGGER_NAME);
+    // 心跳监测超时事件
     private final static long BROKER_CHANNEL_EXPIRED_TIME = 1000 * 60 * 2;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
     private final HashMap<String/* topic */, List<QueueData>> topicQueueTable;
@@ -442,15 +443,23 @@ public class RouteInfoManager {
         return null;
     }
 
+    // 扫描不活动的broker并剔除
     public void scanNotActiveBroker() {
+        // 获取broker活动表
         Iterator<Entry<String, BrokerLiveInfo>> it = this.brokerLiveTable.entrySet().iterator();
+        // 遍历活动表中活动的broker信息
         while (it.hasNext()) {
+            // 获取活动broker的最后更新时间戳
             Entry<String, BrokerLiveInfo> next = it.next();
+            // broker最后时间戳2min内未被更新
             long last = next.getValue().getLastUpdateTimestamp();
             if ((last + BROKER_CHANNEL_EXPIRED_TIME) < System.currentTimeMillis()) {
+                // 关闭broker的通道
                 RemotingUtil.closeChannel(next.getValue().getChannel());
+                // 剔除broker
                 it.remove();
                 log.warn("The broker channel expired, {} {}ms", next.getKey(), BROKER_CHANNEL_EXPIRED_TIME);
+                // 通道销毁监听事件注册
                 this.onChannelDestroy(next.getKey(), next.getValue().getChannel());
             }
         }

@@ -17,27 +17,28 @@
 package org.apache.rocketmq.remoting.netty;
 
 public class NettyServerConfig implements Cloneable {
-    // 默认监听端口
+    // 默认监听端口,下面启动时被默认覆盖为9876
     private int listenPort = 8888;
-    // 服务端工作线程数
+    // Netty工作线程数
     private int serverWorkerThreads = 8;
     // 回调处理线程数
     private int serverCallbackExecutorThreads = 0;
-    // 轮询线程数
+    // 轮询线程数,Netty的IO线程池线程数量。主要负责处理网络请求，解析请求包，再转发到各个业务线程池。最后返回结果
     private int serverSelectorThreads = 3;
-    // 服务端单向请求信号量最大值
+    // 服务端单向请求信号量最大值,sendOneWay 消息请求的最大并发度
     private int serverOnewaySemaphoreValue = 256;
-    // 服务端异步请求信号量最大值
+    // 异步消息发送的最大并发数
     private int serverAsyncSemaphoreValue = 64;
-    // 服务端通道最大空闲时间
+    // 网络连接最大空闲时间默认120s，超过该空闲时间的连接被关闭
     private int serverChannelMaxIdleTimeSeconds = 120;
-    // socket发送缓冲大小， 默认65535
+    // 网络Socket发送缓冲区大小 ， 默认65535(64KB)
     private int serverSocketSndBufSize = NettySystemConfig.socketSndbufSize;
-    // socket接收缓冲大小， 默认65535
+    // socket接收缓冲大小， 默认65535(64KB)
     private int serverSocketRcvBufSize = NettySystemConfig.socketRcvbufSize;
     private int writeBufferHighWaterMark = NettySystemConfig.writeBufferHighWaterMark;
     private int writeBufferLowWaterMark = NettySystemConfig.writeBufferLowWaterMark;
     private int serverSocketBacklog = NettySystemConfig.socketBacklog;
+    //是否开启 ByteBuffer 缓存
     private boolean serverPooledByteBufAllocatorEnable = true;
 
     /**
@@ -47,6 +48,7 @@ public class NettyServerConfig implements Cloneable {
      * ../glibc-2.10.1/configure \ --prefix=/usr \ --with-headers=/usr/include \
      * --host=x86_64-linux-gnu \ --build=x86_64-pc-linux-gnu \ --without-gd
      */
+    //是否启用Epoll模型，Linux 下默认是开启的
     private boolean useEpollNativeSelector = false;
 
     public int getListenPort() {

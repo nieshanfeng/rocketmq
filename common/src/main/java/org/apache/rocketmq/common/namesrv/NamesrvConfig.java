@@ -32,10 +32,11 @@ public class NamesrvConfig {
     private String rocketmqHome = System.getProperty(MixAll.ROCKETMQ_HOME_PROPERTY, System.getenv(MixAll.ROCKETMQ_HOME_ENV));
     // 默认kv属性配置文件路径
     private String kvConfigPath = System.getProperty("user.home") + File.separator + "namesrv" + File.separator + "kvConfig.json";
-    // 默认namesrv配置文件存储路径
+    // 默认namesrv配置文件存储路径,指定配置文件启动通过-c configPath 命令
     private String configStorePath = System.getProperty("user.home") + File.separator + "namesrv" + File.separator + "namesrv.properties";
+    //生产环境名称
     private String productEnvName = "center";
-    // 集群测试标识，默认为false
+    // /是否启动集群测试，默认为false
     private boolean clusterTest = false;
     // 是否支持顺序消息标识，默认为false
     private boolean orderMessageEnable = false;

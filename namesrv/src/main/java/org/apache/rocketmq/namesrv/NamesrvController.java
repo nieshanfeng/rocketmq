@@ -41,16 +41,18 @@ import org.apache.rocketmq.srvutil.FileWatchService;
 
 public class NamesrvController {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.NAMESRV_LOGGER_NAME);
-
+    // NameServer相关配置
     private final NamesrvConfig namesrvConfig;
-
+    // Netty服务相关配置
     private final NettyServerConfig nettyServerConfig;
-
+    // 定时执行任务的线程池
     private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl(
         "NSScheduledThread"));
+    // 路由表
     private final KVConfigManager kvConfigManager;
+    // 远程服务，使用的是NettyRemotingServer
     private final RouteInfoManager routeInfoManager;
-
+    // Netty服务相关线程池
     private RemotingServer remotingServer;
 
     private BrokerHousekeepingService brokerHousekeepingService;
@@ -79,26 +81,28 @@ public class NamesrvController {
     }
 
     public boolean initialize() {
-
+        //加载kvConfigPath下kvConfig.json配置文件里的KV配置，然后将这些配置放到KVConfigManager#configTable属性中
         this.kvConfigManager.load();
-
+        //根据nettyServerConfig初始化一个netty服务器。
+        //brokerHousekeepingService是在NamesrvController实例化时构造函数里实例化的，该类负责Broker连接事件的处理，实现了ChannelEventListener，主要用来管理RouteInfoManager的brokerLiveTable
         this.remotingServer = new NettyRemotingServer(this.nettyServerConfig, this.brokerHousekeepingService);
-
+        // /初始化负责处理Netty网络交互数据的线程池，默认线程数是8个
         this.remotingExecutor =
             Executors.newFixedThreadPool(nettyServerConfig.getServerWorkerThreads(), new ThreadFactoryImpl("RemotingExecutorThread_"));
-
+        //注册Netty服务端业务处理逻辑，如果开启了clusterTest，那么注册的请求处理类是ClusterTestRequestProcessor，否则请求处理类是DefaultRequestProcessor
         this.registerProcessor();
 
-        //任务1、每隔 10s 扫描 broker ,维护当前存活的Broker信息。
+        //注册心跳机制线程池，延迟5秒启动，每隔10秒遍历RouteInfoManager#brokerLiveTable这个属性，用来扫描不存活的broker
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
             @Override
             public void run() {
+                // 心跳监测扫描处于不活跃状态的Broker
                 NamesrvController.this.routeInfoManager.scanNotActiveBroker();
             }
         }, 5, 10, TimeUnit.SECONDS);
 
-        //任务2、每隔 10s 打印KVConfig 信息。
+        //注册打印KV配置线程池，延迟1分钟启动、每10分钟打印出kvConfig配置
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
             @Override
@@ -107,6 +111,7 @@ public class NamesrvController {
             }
         }, 1, 10, TimeUnit.MINUTES);
 
+        //rocketmq可以通过开启TLS来提高数据传输的安全性，如果开启了，那么需要注册一个监听器来重新加载SslContext
         if (TlsSystemConfig.tlsMode != TlsMode.DISABLED) {
             // Register a listener to reload SslContext
             try {
@@ -148,20 +153,24 @@ public class NamesrvController {
         return true;
     }
 
+    /**
+     * 注册处理器
+     */
     private void registerProcessor() {
         if (namesrvConfig.isClusterTest()) {
 
             this.remotingServer.registerDefaultProcessor(new ClusterTestRequestProcessor(this, namesrvConfig.getProductEnvName()),
                 this.remotingExecutor);
         } else {
-
+            // 注册DefaultRequestProcessor处理请求
             this.remotingServer.registerDefaultProcessor(new DefaultRequestProcessor(this), this.remotingExecutor);
         }
     }
 
     public void start() throws Exception {
+        // netty通信服务启动
         this.remotingServer.start();
-
+        //如果开启了TLS
         if (this.fileWatchService != null) {
             this.fileWatchService.start();
         }

@@ -48,6 +48,7 @@ public class NamesrvStartup {
     private static CommandLine commandLine = null;
 
     public static void main(String[] args) {
+        // 启动入口
         main0(args);
     }
 
@@ -126,7 +127,7 @@ public class NamesrvStartup {
             System.out.printf("Please set the %s variable in your environment to match the location of the RocketMQ installation%n", MixAll.ROCKETMQ_HOME_ENV);
             System.exit(-2);
         }
-        // 日志相关设置
+        //初始化logback日志工厂，rocketmq默认使用logback作为日志输出
         LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
         JoranConfigurator configurator = new JoranConfigurator();
         configurator.setContext(lc);
@@ -152,13 +153,14 @@ public class NamesrvStartup {
         if (null == controller) {
             throw new IllegalArgumentException("NamesrvController is null");
         }
-
+        // 初始化NamesrvController
         boolean initResult = controller.initialize();
+        // 初始化失败，结束启动流程
         if (!initResult) {
             controller.shutdown();
             System.exit(-3);
         }
-
+        //添加优雅关闭线程池的钩子
         Runtime.getRuntime().addShutdownHook(new ShutdownHookThread(log, new Callable<Void>() {
             @Override
             public Void call() throws Exception {
@@ -166,7 +168,7 @@ public class NamesrvStartup {
                 return null;
             }
         }));
-
+        // 启动nameserver
         controller.start();
 
         return controller;
